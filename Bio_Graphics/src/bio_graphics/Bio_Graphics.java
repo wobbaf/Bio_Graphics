@@ -1295,6 +1295,13 @@ public class Bio_Graphics extends javax.swing.JFrame {
                 int epr = 150 - Rr;
                 int epg = 150 - Gg;
                 int epb = 150 - Bb;
+                int pixel = img.getRGB(x, y);
+                R = getR(pixel);
+                G = getG(pixel);
+                B = getB(pixel);
+                int fpr = R + Rr;
+                int fpg = G + Gg;
+                int fpb = B + Bb;
                 int fsdd;
 
                 if (fil == 1) {
@@ -1398,25 +1405,25 @@ public class Bio_Graphics extends javax.swing.JFrame {
                     }
                     fsdd = toRGB(epr, epg, epb);
                 } else if (fil == 6) {
-                    if (epr >= 255) {
-                        epr = 255;
+                    if (fpr >= 255) {
+                        fpr = 255;
                     }
-                    if (epr <= 0) {
-                        epr = 0;
+                    if (fpr <= 0) {
+                        fpr = 0;
                     }
-                    if (epg >= 255) {
-                        epg = 255;
+                    if (fpg >= 255) {
+                        fpg = 255;
                     }
-                    if (epg <= 0) {
-                        epg = 0;
+                    if (fpg <= 0) {
+                        fpg = 0;
                     }
-                    if (epb >= 255) {
-                        epb = 255;
+                    if (fpb >= 255) {
+                        fpb = 255;
                     }
-                    if (epb <= 0) {
-                        epb = 0;
+                    if (fpb <= 0) {
+                        fpb = 0;
                     }
-                    fsdd = toRGB(epr, epg, epb);
+                    fsdd = toRGB(fpr, fpg, fpb);
                 }else {
                     fsdd = img.getRGB(x, y);
                 }
