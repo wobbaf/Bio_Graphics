@@ -25,6 +25,8 @@ import java.io.FileFilter;
 import java.io.IOException;
 import static java.lang.Math.sqrt;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
@@ -50,7 +52,7 @@ public class Bio_Graphics extends javax.swing.JFrame {
     double ch = 1.0;
     int tr = 127;
     double gm = 0.25;
-    List<Integer> scores = new ArrayList<Integer>();
+    List<Point> cores = new ArrayList<Point>();
 
     /**
      * Creates new form NewJFrame
@@ -61,10 +63,10 @@ public class Bio_Graphics extends javax.swing.JFrame {
         int maxDataPoints = 256;
         int maxScore = 255;
         for (int i = 0; i < maxDataPoints; i++) {
-            scores.add(i + 1);
+            //scores.add(new Point(i, i));
             //scores.add((int) (255 * (Math.pow((double) (i+1) / (double) 255, ngamma))));
         }
-        graph mainPanel = new graph(scores);
+        graph mainPanel = new graph(cores);
         JFrame frame = new JFrame("graph");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.getContentPane().add(mainPanel);
@@ -137,7 +139,7 @@ public class Bio_Graphics extends javax.swing.JFrame {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 499, Short.MAX_VALUE)
+            .addGap(0, 513, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -636,7 +638,7 @@ public class Bio_Graphics extends javax.swing.JFrame {
             Logger.getLogger(Bio_Graphics.class.getName()).log(Level.SEVERE, null, ex);
         }
         OK(myPicture);
-        graph mainPanel = new graph(scores);
+        graph mainPanel = new graph(cores);
         JFrame frame = new JFrame("graph");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.getContentPane().add(mainPanel);
@@ -676,13 +678,13 @@ public class Bio_Graphics extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(NewJFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Bio_Graphics.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(NewJFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Bio_Graphics.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(NewJFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Bio_Graphics.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(NewJFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Bio_Graphics.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
@@ -769,13 +771,9 @@ public class Bio_Graphics extends javax.swing.JFrame {
 
     public void Invert(BufferedImage img) {
         BufferedImage img1 = deepCopy(img);
-        scores.clear();
+        cores.clear();
         int maxDataPoints = 256;
         int maxScore = 255;
-        for (int i = 0; i < maxDataPoints; i++) {
-            scores.add(255 - i);
-
-        }
         for (int x = 0; x < img.getWidth(); x++) {
             for (int y = 0; y < img.getHeight(); y++) {
                 int pixel = img.getRGB(x, y);
@@ -807,13 +805,10 @@ public class Bio_Graphics extends javax.swing.JFrame {
     public void Brightness(BufferedImage img, int bright) {
         BufferedImage img1 = deepCopy(img);
         bright = 255 - br;
-        scores.clear();
+
         int maxDataPoints = 256;
         int maxScore = 255;
-        for (int i = 0; i < maxDataPoints; i++) {
-            scores.add(bright + i);
 
-        }
         for (int x = 0; x < img.getWidth(); x++) {
             for (int y = 0; y < img.getHeight(); y++) {
                 int pixel = img.getRGB(x, y);
@@ -854,13 +849,6 @@ public class Bio_Graphics extends javax.swing.JFrame {
 
     public void Contrast(BufferedImage img, double cont) {
         BufferedImage img1 = deepCopy(img);
-        scores.clear();
-        int maxDataPoints = 256;
-        int maxScore = 255;
-        for (int i = 0; i < maxDataPoints; i++) {
-            scores.add((int) cont * (i - 127) + 127);
-
-        }
         for (int x = 0; x < img.getWidth(); x++) {
             for (int y = 0; y < img.getHeight(); y++) {
                 int pixel = img.getRGB(x, y);
@@ -902,13 +890,9 @@ public class Bio_Graphics extends javax.swing.JFrame {
     public void Gamma(BufferedImage img, double gamma) {
         double ngamma = 1 / gamma;
         BufferedImage img1 = deepCopy(img);
-        scores.clear();
         int maxDataPoints = 256;
         int maxScore = 255;
-        for (int i = 0; i < maxDataPoints; i++) {
-            scores.add((int) (255 * (Math.pow((double) i / (double) 255, ngamma))));
-            System.out.println(scores.get(i));
-        }
+
         for (int x = 0; x < img.getWidth(); x++) {
             for (int y = 0; y < img.getHeight(); y++) {
                 int pixel = img.getRGB(x, y);
@@ -957,29 +941,45 @@ public class Bio_Graphics extends javax.swing.JFrame {
                 int R = getR(pixel);
                 int G = getG(pixel);
                 int B = getB(pixel);
+                int ixr = 0;
+                int ixg = 0;
+                int ixb = 0;
                 int r, g, b;
-                r = scores.get(R);
+                //y=(((yB-yA)(x-xA))/(xB-xA))+yA 
+                for (int i = 0; i <= cores.size()-1; i++){
+                    if (R > cores.get(i).getX()/2 && R < cores.get(i+1).getX()/2)
+                        ixr = i;
+                }
+                r =(int) ((((cores.get(ixr+1).getY()/2-cores.get(ixr).getY()/2)*(R - cores.get(ixr).getX()/2))/(cores.get(ixr+1).getX()/2-cores.get(ixr).getX()/2))+(cores.get(ixr).getY()/2));
                 if (r > 255) {
                     r = 255;
                 }
                 if (r < 0) {
                     r = 0;
                 }
-                g = scores.get(G);
+                for (int i = 0; i < cores.size()-1; i++){
+                    if (G > cores.get(i).getX()/2 && G < cores.get(i+1).getX()/2)
+                        ixg = i;
+                }
+                g = (int) ((((cores.get(ixg+1).getY()/2-cores.get(ixg).getY()/2)*(G - cores.get(ixg).getX()/2))/(cores.get(ixg+1).getX()/2-cores.get(ixg).getX()/2))+(cores.get(ixg).getY()/2));;
                 if (g > 255) {
                     g = 255;
                 }
                 if (g < 0) {
                     g = 0;
                 }
-                b = scores.get(B);
+                for (int i = 0; i < cores.size()-1; i++){
+                    if (B > cores.get(i).getX()/2 && B < cores.get(i+1).getX()/2)
+                        ixb = i;
+                }
+                b = (int) ((((cores.get(ixb+1).getY()/2-cores.get(ixb).getY()/2)*(B - cores.get(ixb).getX()/2))/(cores.get(ixb+1).getX()/2-cores.get(ixb).getX()/2))+(cores.get(ixb).getY()/2));;
                 if (b > 255) {
                     b = 255;
                 }
                 if (b < 0) {
                     b = 0;
                 }
-                img1.setRGB(x, y, toRGB(r, g, b));
+                img1.setRGB(x, y, toRGB(255-r, 255-g, 255-b));
             }
         }
         try {
@@ -2022,11 +2022,13 @@ public class Bio_Graphics extends javax.swing.JFrame {
         private final Stroke GRAPH_STROKE = new BasicStroke(3f);
         private static final int GRAPH_POINT_WIDTH = 5;
         private static final int Y_HATCH_CNT = 256;
-        private List<Integer> scores;
+        private List<Point> scores;
+        List<Point> graphPoints = new ArrayList<Point>();
         int xstart = 0;
         int ystart = 0;
-
-        public graph(List<Integer> scores) {
+        Point currpoint = new Point();
+        Point max = new Point(0,512);
+        public graph(List<Point> scores) {
             this.scores = scores;
             addMouseListener(this);
         }
@@ -2040,14 +2042,9 @@ public class Bio_Graphics extends javax.swing.JFrame {
 
             double xScale = ((double) getWidth() - 2 * BORDER_GAP) / (scores.size() - 1);
             double yScale = ((double) getHeight() - 2 * BORDER_GAP) / (MAX_SCORE - 1);
-
-            List<Point> graphPoints = new ArrayList<Point>();
-            for (int i = 0; i < scores.size(); i++) {
-                int x1 = (int) (i * xScale + BORDER_GAP);
-                int y1 = (int) ((MAX_SCORE - scores.get(i)) * yScale + BORDER_GAP);
-                graphPoints.add(new Point(x1, y1));
-            }
-
+            //graphPoints.add(new Point(0,512));
+            
+            
             // create x and y axes 
             g2.drawLine(BORDER_GAP, getHeight() - BORDER_GAP, BORDER_GAP, BORDER_GAP);
             g2.drawLine(BORDER_GAP, getHeight() - BORDER_GAP, getWidth() - BORDER_GAP, getHeight() - BORDER_GAP);
@@ -2069,15 +2066,37 @@ public class Bio_Graphics extends javax.swing.JFrame {
                 int y1 = y0 - GRAPH_POINT_WIDTH;
                 g2.drawLine(x0, y0, x1, y1);
             }
-
+            graphPoints.clear();
             Stroke oldStroke = g2.getStroke();
             g2.setColor(GRAPH_COLOR);
             g2.setStroke(GRAPH_STROKE);
-            for (int i = 0; i < graphPoints.size() - 1; i++) {
+            //if (graphPoints.size()<2){
+            int min = minpoint(currpoint);
+            graphPoints.add(new Point(0,512));
+            //}
+            for (int i = 0; i < scores.size(); i++) {
+                graphPoints.add(scores.get(i));
+                //System.out.println(graphPoints.get(i).getX());
+                //
+                
+                    
+            }
+            //graphPoints.remove(graphPoints.size()-1);
+            //if (graphPoints.size()<2){
+            graphPoints.add(new Point(512,0));
+            //}
+            Collections.sort(graphPoints,new Comparator<Point>() {
+            public int compare(Point o1, Point o2) {
+                return Integer.compare((int)o1.getX(), (int)o2.getX());
+            }
+            });
+            cores = graphPoints;
+            for (int i = 0; i < graphPoints.size()-1; i++) {
+                
                 int x1 = graphPoints.get(i).x;
                 int y1 = graphPoints.get(i).y;
-                int x2 = graphPoints.get(i + 1).x;
-                int y2 = graphPoints.get(i + 1).y;
+                int x2 = graphPoints.get(i+1).x;
+                int y2 = graphPoints.get(i+1).y;
                 g2.drawLine(x1, y1, x2, y2);
             }
 
@@ -2091,20 +2110,39 @@ public class Bio_Graphics extends javax.swing.JFrame {
                 g2.fillOval(x, y, ovalW, ovalH);
             }
         }
-
+        private int minpoint(Point p){
+            Point max = new Point (0,0);
+            int ix = 0;
+            for (int i = 0; i < graphPoints.size(); i++){
+                if (max.getX() < p.getX() && max.getX() < graphPoints.get(i).getX()){
+                    max = graphPoints.get(i);
+                    ix = i;
+                }
+            }
+            return ix;
+        }
+        private Point maxpoint(Point p){
+            Point max = new Point (512,512);
+            for (int i = graphPoints.size(); i >0; i--){
+                if (max.getX() > p.getX() && max.getX() > graphPoints.get(i).getX()){
+                    max = graphPoints.get(i);
+                }
+            }
+            return max;
+        }
         @Override
         public Dimension getPreferredSize() {
             return new Dimension(PREF_W, PREF_H);
         }
 
         private void createAndShowGui() {
-            List<Integer> scores = new ArrayList<>();
+            List<Point> scores = new ArrayList<>();
             Random random = new Random();
             //double ngamma = 1/gm;
             int maxDataPoints = 256;
             int maxScore = 255;
             for (int i = 0; i < maxDataPoints; i++) {
-                scores.add(i);
+                scores.add(new Point(i, i));
                 //scores.add((int) (255 * (Math.pow((double) (i+1) / (double) 255, ngamma))));
             }
             graph mainPanel = new graph(scores);
@@ -2140,9 +2178,26 @@ public class Bio_Graphics extends javax.swing.JFrame {
 
         @Override
         public void mouseReleased(MouseEvent e) {
+            boolean flag = false;
             System.out.println(ystart);///2-13);
-            scores.remove(ystart);
-            scores.add(ystart, 255 - (e.getY() / 2));
+            //scores.remove(ystart);
+            //scores.add(ystart, 255 - (e.getY() / 2));
+            //graphPoints.clear();
+            //if (graphPoints.size() > 2)
+            //graphPoints.add(graphPoints.get(graphPoints.size()-1));
+                //graphPoints.add(new Point(512,0));
+            //graphPoints.add(e.getPoint());
+            for (int i = 0; i<scores.size(); i++){
+            if (scores.get(i).getX() == e.getPoint().getX()){
+                scores.remove(i);
+            scores.add(new Point(e.getX(),e.getY()));
+            flag = true;
+            }
+            }
+            if (flag == false){
+                scores.add(new Point(e.getX(),e.getY()));
+            }
+            currpoint = e.getPoint();
             SwingUtilities.updateComponentTreeUI(jPanel1);
         }
 
